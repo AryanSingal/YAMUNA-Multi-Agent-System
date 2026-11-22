@@ -1,502 +1,121 @@
-# 🌊 YAMUNA MAS — Multi-Agent AI System
+# Yamuna River Water-Quality Assessment Platform (MAS-IFS + MCP)
 
-**YAMUNA MAS (Multi-Agent System)** is an AI-powered multi-agent platform that integrates multiple intelligent agents, AI/LLM capabilities, Model Context Protocol (MCP), Gradio-based user interaction, and server-side communication into a unified system.
-
-The project is designed as an experimental multi-agent AI platform capable of coordinating different agents and services through a centralized interface.
+An interactive, uncertainty-aware water-quality assessment platform for the Delhi stretch of the Yamuna River, combining a modular **Multi-Agent System (MAS)**, **Atanassov Intuitionistic Fuzzy Sets (IFS)**, standard regulatory indices (**NSF-WQI** and **CCME-WQI**), a **Model Context Protocol (MCP)** server, and a **Gradio** web interface.
 
 ---
 
-## 🚀 Overview
+## Key Features
 
-YAMUNA MAS v3.0 is a multi-agent artificial intelligence platform developed using Python and modern AI technologies.
-
-The system combines:
-
-* 🤖 Multi-agent architecture
-* 🧠 AI/LLM-powered processing
-* 🔌 Model Context Protocol (MCP)
-* 🌐 Gradio web interface
-* 📡 MCP SSE server
-* ⚡ Parallel agent/service execution
-* 📊 Performance benchmarking
-* 🛠️ Extensible agent and engine architecture
-
-The project is implemented primarily as a Jupyter Notebook and provides an interactive environment for running and testing the complete YAMUNA platform.
+- **Modular Multi-Agent Pipeline**: Orchestrated through a central `CoordinatorAgent` managing specialized agents for data ingestion, validation, NSF-WQI, CCME-WQI, IFS modeling, spatiotemporal inference, distance ranking, alert generation, visualization, reporting, and conversational assistance.
+- **Intuitionistic Fuzzy Set (IFS) Modeling**:
+  - Continuous membership functions for **pH**, **BOD**, **DO**, and **Fecal Coliform (FC)**.
+  - Direct spatiotemporal relations across seasons ($R$), monitoring sites ($X$), and joint season–site cells ($T^*$).
+  - Three-term Szmidt–Kacprzyk normalized Hamming and Euclidean distances from the upstream reference station (**Palla**).
+  - Pure Atanassov $(0, 0, 1)$ hesitation encoding for missing or non-detect laboratory readings so data gaps are tracked explicitly rather than silently imputed.
+- **Regulatory WQI Baselines**: Native `NaN`-masked **NSF-WQI** and **CCME-WQI** evaluators with automatic classification bands and station-level summaries.
+- **MCP Integration**: Exposes live tools, prompts, and resources (`run_water_quality_pipeline`, `evaluate_yamuna_data`, `memory://historical_context`, `logs://agent_activity`) for structured agentic interoperability.
+- **Interactive Gradio Dashboard**: Role-aware interface (`public` and `official` views) supporting dataset upload, date/site filtering, interactive visual diagnostics, automated alerts, downloadable reports, and an optional LLM assistant.
 
 ---
 
-## ✨ Key Features
-
-### 🤖 Multi-Agent Architecture
-
-YAMUNA MAS is structured around multiple agents and processing engines that can work together as part of a larger AI workflow.
-
-The multi-agent approach allows different components to handle different tasks while contributing to the overall system.
-
-### 🧠 AI & LLM Integration
-
-The platform integrates Large Language Model capabilities for intelligent processing and agent-based operations.
-
-The project uses the **Groq API** for LLM-related functionality.
-
-> **Security:** API credentials must never be committed directly to GitHub.
-
-### 🔌 Model Context Protocol (MCP)
-
-YAMUNA MAS incorporates the **Model Context Protocol (MCP)** to provide a standardized way for AI systems and tools to communicate with external services and capabilities.
-
-The project includes MCP-related server functionality and supports **MCP SSE communication**.
-
-### 🌐 Gradio Interface
-
-A Gradio-based interface provides an interactive way to access and test the platform.
-
-This makes it possible to interact with the system without requiring a separate frontend application.
-
-### 📡 MCP SSE Server
-
-The project includes functionality for launching an MCP server using **Server-Sent Events (SSE)**.
-
-This enables communication between the MCP components and connected clients.
-
-### ⚡ Dual Launch
-
-YAMUNA MAS provides a dual-launch setup for running:
-
-* Gradio interface
-* MCP SSE server
-
-This allows the user interface and MCP services to operate together.
-
-### 📊 Performance Benchmarking
-
-The notebook includes performance-testing and benchmarking functionality to evaluate the behavior and execution performance of the platform.
-
----
-
-## 🏗️ System Architecture
-
-The overall architecture can be represented as:
+## System Architecture
 
 ```text
-                    ┌──────────────────────┐
-                    │      User / Client   │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │   Gradio Interface   │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │    YAMUNA MAS Core   │
-                    └──────────┬───────────┘
-                               │
-                ┌──────────────┼──────────────┐
-                ▼              ▼              ▼
-          ┌──────────┐   ┌──────────┐   ┌──────────┐
-          │  Agent 1 │   │  Agent 2 │   │  Agent N │
-          └────┬─────┘   └────┬─────┘   └────┬─────┘
-               │              │              │
-               └──────────────┼──────────────┘
-                              ▼
-                    ┌──────────────────────┐
-                    │    AI / LLM Layer    │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │      MCP Layer       │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │     MCP SSE Server   │
-                    └──────────────────────┘
+DPCC Monitoring Dataset (.xlsx)
+        │
+        ▼
+PreprocessingAgent ──► Validation & Seasonal Mapping (Winter, Summer, Monsoon, Post-Monsoon)
+        │
+        ├──► WQIAgent (NSF-WQI)
+        ├──► CCMEAgent (CCME-WQI)
+        └──► IFSAgent (Relations R & X, Hesitation π)
+                │
+                ▼
+         InferenceAgent (Joint Spatiotemporal Relation T*)
+                │
+                ▼
+         DistanceAgent (3-Term Hamming & Euclidean Ranking)
+                │
+                ├──► LLMDecisionAgent & AlertNotificationAgent
+                ├──► VisualizationAgent & ReportAgent
+                └──► MCP Server & Gradio Dashboard
 ```
 
 ---
 
-## 🛠️ Technologies Used
+## Dataset Overview
 
-| Technology           | Purpose                                      |
-| -------------------- | -------------------------------------------- |
-| **Python**           | Core programming language                    |
-| **Jupyter Notebook** | Interactive development and execution        |
-| **Gradio**           | Web-based user interface                     |
-| **Groq API**         | Large Language Model integration             |
-| **MCP**              | Model Context Protocol integration           |
-| **MCP SSE**          | Server-Sent Events communication             |
-| **nest-asyncio**     | Async execution inside notebook environments |
-| **python-docx**      | Document generation/processing               |
-| **localtunnel**      | External access/tunneling during development |
+The included file `data/data_all_sites_cleaned.xlsx` compiles monthly grab-sample water-quality records published by the **Delhi Pollution Control Committee (DPCC)** from **January 2024 to September 2026** across **9 monitoring locations** along the Delhi stretch of the Yamuna River:
+
+- **Upstream / Entry**: Palla, Wazirabad
+- **Urban / Drain-Impacted Stretch**: ISBT Bridge, ITO Bridge, Nizamuddin Bridge, Okhla Barrage, Agra Canal (Okhla), Shahdara Drain Outfall, Asgarpur
+
+Core physicochemical and microbiological indicators include **pH**, **Dissolved Oxygen (DO)**, **Biochemical Oxygen Demand (BOD)**, **Fecal Coliform (FC)**, and **Chemical Oxygen Demand (COD)**.
 
 ---
 
-## 📁 Project Structure
+## Repository Structure
 
 ```text
-YAMUNA-MAS/
-│
-├── Yamuna_MAS_MCP.ipynb
-│
-├── .gitignore
-│
-└── README.md
+yamuna-mas-wqi/
+├── app.py                              # Complete MAS-IFS platform, MCP server, and Gradio UI
+├── data/
+│   └── data_all_sites_cleaned.xlsx     # Compiled DPCC Yamuna dataset (9 sites, 2024–2026)
+├── requirements.txt                    # Python package dependencies
+├── .gitignore                          # Standard Python and local log exclusions
+└── README.md                           # Project documentation
 ```
 
-The main application and platform implementation are contained within the Jupyter Notebook.
-
 ---
 
-## 💻 Requirements
+## Installation & Quick Start
 
-Before running the project, make sure the following are installed:
+### 1. Clone or Extract the Repository
+```bash
+cd yamuna-mas-wqi
+```
 
-* Python 3.x
-* Jupyter Notebook or JupyterLab
-* Internet connection
-* Required Python packages
-* A valid Groq API key
+### 2. Create a Virtual Environment & Install Dependencies
+```bash
+python -m venv .venv
+source .venv/bin/activate      # Linux / macOS
+# .venv\Scripts\activate       # Windows
 
----
+pip install -r requirements.txt
+```
 
-## 📦 Installation
-
-### 1. Clone the Repository
+### 3. Configure Optional LLM API Keys (Environment Variables)
+All core analytical engines (IFS, NSF-WQI, CCME-WQI, alerts, visualizations, and reports) run completely offline without API keys. To enable the conversational `LLMAssistantAgent`, set either environment variable before launching:
 
 ```bash
-git clone https://github.com/Aryan091203/YAMUNA-MAS.git
+export GROQ_API_KEY="your-groq-api-key"
+# or
+export GEMINI_API_KEY="your-gemini-api-key"
 ```
 
-### 2. Navigate to the Project
-
+### 4. Launch the Application
 ```bash
-cd YAMUNA-MAS
+python app.py
 ```
 
-### 3. Install Required Packages
-
-Run the following in your Python environment:
-
-```bash
-pip install gradio groq python-docx mcp nest-asyncio
-```
-
-If MCP CLI functionality is required:
-
-```bash
-pip install "mcp[cli]"
-```
-
-For local tunneling:
-
-```bash
-npm install -g localtunnel
-```
+Once started, open the local Gradio URL shown in your terminal to explore site rankings, seasonal trends, IFS hesitation diagnostics, regulatory WQI comparisons, and automated alerts.
 
 ---
 
-## 🔐 API Key Configuration
+## MCP Endpoints
 
-The project uses the Groq API for AI/LLM functionality.
+When `mcp` is installed, `app.py` registers an `MCPServer` instance (`Yamuna_Platform_Server`) exposing:
 
-**Never place your real API key directly inside the notebook before uploading the project to GitHub.**
-
-Instead, configure it using an environment variable.
-
-### Windows PowerShell
-
-```powershell
-$env:GROQ_API_KEY="your_api_key_here"
-```
-
-### Python
-
-```python
-import os
-from groq import Groq
-
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-
-client = Groq(api_key=GROQ_API_KEY)
-```
-
-For permanent local configuration, an environment file can also be used, provided that `.env` is included in `.gitignore`.
+| Type | Identifier | Description |
+| :--- | :--- | :--- |
+| **Tool** | `run_water_quality_pipeline` | Runs the full MAS-IFS, NSF-WQI, and CCME-WQI pipeline on a specified dataset and date range |
+| **Prompt** | `evaluate_yamuna_data` | Builds a grounded diagnostic prompt from the latest cached pipeline state and historical memory |
+| **Resource** | `memory://historical_context` | Returns summarized historical pipeline runs stored in memory |
+| **Resource** | `logs://agent_activity` | Returns recent structured inter-agent communication logs |
 
 ---
 
-## ▶️ Running the Project
+## Data Source
 
-Open the notebook:
-
-```text
-Yamuna_MAS_MCP.ipynb
-```
-
-Then execute the cells in their intended order.
-
-The notebook is organized into multiple stages, including:
-
-1. Environment and package setup
-2. YAMUNA platform initialization
-3. Agent and engine configuration
-4. Gradio interface setup
-5. MCP server setup
-6. Dual launch of services
-7. AI/LLM interaction
-8. Performance benchmarking
-
----
-
-## 🌐 Gradio Interface
-
-The Gradio component provides a browser-based interface for interacting with the YAMUNA platform.
-
-After successful execution, the notebook provides the required local interface information.
-
-Open the generated Gradio URL in a web browser to interact with the application.
-
----
-
-## 🔌 MCP Integration
-
-YAMUNA MAS integrates the **Model Context Protocol (MCP)** to provide structured communication between the AI system and MCP-enabled tools/services.
-
-The platform includes MCP server functionality and supports SSE-based communication.
-
-Conceptually:
-
-```text
-AI Agents
-    │
-    ▼
-YAMUNA MAS
-    │
-    ▼
-MCP
-    │
-    ▼
-MCP SSE Server
-    │
-    ▼
-Connected Tools / Services
-```
-
----
-
-## 📡 Dual Service Launch
-
-One of the important components of the platform is its dual-launch capability.
-
-The system can operate with:
-
-```text
-┌─────────────────┐
-│ Gradio Web UI   │
-└────────┬────────┘
-         │
-         │
-┌────────▼────────┐
-│  YAMUNA MAS     │
-└────────┬────────┘
-         │
-┌────────▼────────┐
-│ MCP SSE Server  │
-└─────────────────┘
-```
-
-This allows the interactive interface and MCP communication layer to be used together.
-
----
-
-## 📊 Performance Testing
-
-The project contains benchmarking functionality for evaluating the execution and performance of the platform.
-
-Benchmarking can be used to study:
-
-* Agent execution performance
-* Processing time
-* Service response behavior
-* Overall system performance
-
-The benchmark results are generated during notebook execution.
-
----
-
-## 🔄 Project Workflow
-
-The general workflow of YAMUNA MAS is:
-
-```text
-Start
-  │
-  ▼
-Initialize Environment
-  │
-  ▼
-Load Required Libraries
-  │
-  ▼
-Initialize YAMUNA Platform
-  │
-  ▼
-Initialize Agents & Engines
-  │
-  ▼
-Configure AI / LLM
-  │
-  ▼
-Launch Gradio Interface
-  │
-  ▼
-Launch MCP SSE Server
-  │
-  ▼
-Process Requests
-  │
-  ▼
-Execute Agents / Tools
-  │
-  ▼
-Return Results
-  │
-  ▼
-Performance Evaluation
-```
-
----
-
-## 🔒 Security Considerations
-
-This project uses external AI services and therefore requires API credentials.
-
-For security:
-
-* Never commit API keys to GitHub.
-* Never share private API credentials publicly.
-* Store secrets using environment variables.
-* Keep `.env` files out of version control.
-* Rotate/revoke any API key that has accidentally been exposed.
-* Do not include sensitive credentials in Jupyter notebook cells.
-
-A `.gitignore` file should include:
-
-```gitignore
-.env
-__pycache__/
-.ipynb_checkpoints/
-.venv/
-venv/
-.vscode/
-```
-
----
-
-## 🧪 Development
-
-YAMUNA MAS is suitable for experimentation and development in:
-
-* Multi-agent AI
-* LLM applications
-* AI agent orchestration
-* MCP-based systems
-* AI tool integration
-* Interactive AI interfaces
-* AI performance evaluation
-
-The notebook-based structure also makes it convenient to experiment with individual components and workflows.
-
----
-
-## 🔮 Future Improvements
-
-Potential future improvements include:
-
-* Modularizing agents into separate Python modules
-* Adding a dedicated frontend
-* Adding persistent configuration management
-* Improving error handling
-* Adding automated tests
-* Adding structured logging
-* Improving agent-to-agent communication
-* Adding more MCP-compatible tools
-* Adding authentication and access control
-* Containerizing the application with Docker
-* Deploying the platform to a cloud environment
-* Creating a production-ready API layer
-* Adding detailed performance dashboards
-
----
-
-## 🎯 Project Objectives
-
-The main objectives of YAMUNA MAS are to explore and demonstrate:
-
-1. Multi-agent artificial intelligence
-2. LLM-powered agent workflows
-3. Model Context Protocol integration
-4. AI tool/service communication
-5. Interactive AI applications
-6. MCP SSE-based communication
-7. Performance evaluation of AI systems
-
----
-
-## 📚 Academic / Research Purpose
-
-YAMUNA MAS can be used as an educational and experimental project for understanding modern AI system architecture.
-
-It demonstrates how multiple AI components, agents, interfaces, and communication protocols can be combined into a single platform.
-
----
-
-## 👨‍💻 Author
-
-**Aryan**
-
-YAMUNA MAS v3.0
-
----
-
-## 🌐 Repository
-
-**GitHub:**
-https://github.com/Aryan091203/YAMUNA-MAS
-
----
-
-## 🤝 Contributing
-
-Contributions and improvements are welcome.
-
-To contribute:
-
-1. Fork the repository.
-2. Create a new branch.
-3. Make your changes.
-4. Test the changes.
-5. Commit your work.
-6. Open a Pull Request.
-
----
-
-## ⚠️ Disclaimer
-
-This project is intended for educational, experimental, and research purposes.
-
-Users are responsible for configuring their own API credentials securely and for complying with the terms and policies of any external AI services used by the project.
-
----
-
-## ⭐ Support
-
-If you find this project useful, consider giving the repository a ⭐ on GitHub.
-
----
-
-## 📄 License
-
-This project does not currently specify a separate open-source license. Unless a license is added to the repository, the project should be treated as **all rights reserved** by the author.
+Original monthly water-quality analysis reports are publicly published by the **Delhi Pollution Control Committee (DPCC)** at:
+https://dpcc.delhi.gov.in/dpcc/analysis-reports
