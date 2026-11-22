@@ -16,7 +16,7 @@ os.environ.setdefault("YAMUNA_DATA_PATH", os.path.join(os.path.dirname(__file__)
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║  YAMUNA RIVER MAS-IFS PLATFORM — Agents, Engines, MCP & Gradio UI     ║
-# ║  Author: Aryan | Teacher: Prof. Vibha   Gaur        ║
+# ║  Author: Aryan | Roll: 22001570051 | Teacher: Prof. Vibha   Gaur        ║
 # ║                                                                          ║
 # ║  Login:  official / official123  (full access — upload, run, alerts)    ║
 # ║          viewer   / viewer123    (read-only — charts, IFS, CCME, chat)  ║
