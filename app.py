@@ -2781,12 +2781,17 @@ def ccme_interp_html(ccme_df: pd.DataFrame) -> str:
 
 def build_app():
     global _STATE, _SESSION
+    import inspect
 
-    with gr.Blocks(
-        css=CSS,
-        title="Yamuna WQI Platform v3.0",
-        theme=gr.themes.Soft(primary_hue="blue", secondary_hue="sky", neutral_hue="slate"),
-    ) as app:
+    _theme = gr.themes.Soft(primary_hue="blue", secondary_hue="sky", neutral_hue="slate")
+    _blocks_params = inspect.signature(gr.Blocks.__init__).parameters
+    _blocks_kwargs = {"title": "Yamuna WQI Platform v3.0"}
+    if "css" in _blocks_params:
+        _blocks_kwargs["css"] = CSS
+    if "theme" in _blocks_params:
+        _blocks_kwargs["theme"] = _theme
+
+    with gr.Blocks(**_blocks_kwargs) as app:
 
         session_st  = gr.State(None)
         chat_hist   = gr.State([])
@@ -3044,13 +3049,17 @@ CSV includes all computed tables combined.
   Ask anything about the analysis, IFS theory, or CCME/NSF WQI.
   Run the pipeline first for data-specific answers.
 </div>""")
-                    chatbot_widget = gr.Chatbot(
-                        height=520,
-                        type="messages",
-                        show_label=False,
-                        placeholder="Run analysis, then ask: *Which location is worst?*",
-                        bubble_full_width=False,
-                    )
+                    _cb_params = inspect.signature(gr.Chatbot.__init__).parameters
+                    _cb_kwargs = {
+                        "height": 520,
+                        "show_label": False,
+                        "placeholder": "Run analysis, then ask: *Which location is worst?*",
+                    }
+                    if "type" in _cb_params:
+                        _cb_kwargs["type"] = "messages"
+                    if "bubble_full_width" in _cb_params:
+                        _cb_kwargs["bubble_full_width"] = False
+                    chatbot_widget = gr.Chatbot(**_cb_kwargs)
                     chat_input = gr.Textbox(
                         placeholder="Ask a question... (Enter to send)",
                         show_label=False,
@@ -3458,7 +3467,9 @@ if __name__ == '__main__':
 
     MCP_HOST     = os.environ.get("MCP_HOST", "127.0.0.1")
     MCP_PORT     = int(os.environ.get("MCP_PORT", "8070"))
-    GRADIO_SHARE = os.environ.get("GRADIO_SHARE", "false").lower() == "true"
+    _in_colab = "COLAB_RELEASE_TAG" in os.environ or "COLAB_GPU" in os.environ
+    _default_share = "true" if _in_colab else "false"
+    GRADIO_SHARE = os.environ.get("GRADIO_SHARE", _default_share).lower() == "true"
 
     def _port_in_use(host: str, port: int) -> bool:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -3475,4 +3486,16 @@ if __name__ == '__main__':
     else:
         threading.Thread(target=run_mcp, daemon=True).start()
     app = build_app()
-    app.launch(share=GRADIO_SHARE, server_port=7870, show_error=True, quiet=False)
+    import inspect
+    _launch_params = inspect.signature(app.launch).parameters
+    _launch_kwargs = {
+        "share": GRADIO_SHARE,
+        "server_port": 7870,
+        "show_error": True,
+        "quiet": False,
+    }
+    if "css" in _launch_params:
+        _launch_kwargs["css"] = CSS
+    if "theme" in _launch_params:
+        _launch_kwargs["theme"] = gr.themes.Soft(primary_hue="blue", secondary_hue="sky", neutral_hue="slate")
+    app.launch(**_launch_kwargs)
